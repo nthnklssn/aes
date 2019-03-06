@@ -20,3 +20,7 @@ int main()
 
 
 }
+
+static void encryptionKeyExpansion (uint8_t * key, uint8_t * rowConstant){
+
+}
