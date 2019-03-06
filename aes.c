@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
+static void encryptionKeyExpansion (unit8_t *, unit8_t *);
+static void decryptionKeyExpansion (unit8_t *, unit8_t *);
 
 int main()
 {
