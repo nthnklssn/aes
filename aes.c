@@ -23,4 +23,9 @@ int main()
 
 static void encryptionKeyExpansion (uint8_t * key, uint8_t * rowConstant){
 
+  uint8_t i;
+  key[5][0] ^= sbox(key[3][0]) ^ (*rc);
+  key[5][1] ^= sbox(key[3][1]);
+  key[5][2] ^= sbox(key[3][2]);
+  key[5][3] ^= sbox(key[3][3]);
 }
