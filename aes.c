@@ -117,10 +117,11 @@ addRoundKey(keys, rawData, 1);
 
 static void initialize (keyStruct * keyStruct, uint8_t key[ROUNDS][4][4]){
 
-  uint8_t rowConstant = 1;
-  int i;
-  int j;
-  int k;
+  rowConstants[0] = 1;
+  int i,j,k;
+  for(i=0;i<ROUNDS;i++){
+
+  }
   for(i=0; i<ROUNDS; i++){
     for(j=0;j<4;j++){
       for(k=0;k<4;k++){
@@ -128,11 +129,11 @@ static void initialize (keyStruct * keyStruct, uint8_t key[ROUNDS][4][4]){
       }
     }
   }
-  encryptionKeyExpansion(keyStruct, &rowConstant, 1);
+  encryptionKeyExpansion(keyStruct, rowConstants[0], 1);
 
   for(i=2;i<ROUNDS;i++){
     rowConstant *= 2;
-    encryptionKeyExpansion(keyStruct, &rowConstant, i);
+    encryptionKeyExpansion(keyStruct, rowConstants[i - 1], i);
   }
 }
 
