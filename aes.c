@@ -2,74 +2,126 @@
 #include <stdio.h>
 #include "aes.h"
 
-static void initialize (keyStruct * , uint8_t [10][4][4]);
+static void initialize (keyStruct * , uint8_t [ROUNDS][4][4]);
 static void encryptionKeyExpansion (keyStruct *, uint8_t *, int);
 static void decryptionKeyExpansion (keyStruct *, uint8_t *, int);
-static void printRoundKey (keyStruct *);
+static void printDataBlock (uint8_t [4][4]);
+static void printRoundKeyBlocks (keyStruct *, int, int);
+static void addRoundKey (keyStruct *, uint8_t [4][4], int round);
 static void subBytes(uint8_t [4][4]);
 static void shiftRows(uint8_t [4][4]);
 
 int main()
 {
   keyStruct * keys = malloc(sizeof(keyStruct));
-  uint8_t roundKeys[10][4][4] = {{{ 0x00, 0x01, 0x02, 0x03 },
-  { 0x04, 0x05, 0x06, 0x07 },
-  { 0x08, 0x09, 0x0a, 0x0b },
-  { 0x0c, 0x0d, 0x0e, 0x0f }},
-  {{ 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 }},
-  {{ 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 }},
-  {{ 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 }},
-  {{ 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 }},
-  {{ 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 }},
-  {{ 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 }},
-  {{ 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 }},
-  {{ 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 }},
-  {{ 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x00 }}
-  };
-  uint8_t rawData[4][4] =
-  {{0x00, 0x44, 0x88, 0xcc},
-  {0x11, 0x55, 0x99, 0xdd},
-  {0x22, 0x66, 0xaa, 0xee},
-  {0x33, 0x77, 0xbb, 0xff}};
-  shiftRows(rawData);
-  initialize(keys,roundKeys);
-  printRoundKey(keys);
+  uint8_t roundKeys[ROUNDS][4][4] = {{{ 0x00, 0x01, 0x02, 0x03 },
+                                      { 0x04, 0x05, 0x06, 0x07 },
+                                      { 0x08, 0x09, 0x0a, 0x0b },
+                                      { 0x0c, 0x0d, 0x0e, 0x0f }},
+                                      {{ 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 }},
+                                      {{ 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 }},
+                                      {{ 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 }},
+                                      {{ 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 }},
+                                      {{ 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 }},
+                                      {{ 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 }},
+                                      {{ 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 }},
+                                      {{ 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 }},
+                                      {{ 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 },
+                                      { 0x00, 0x00, 0x00, 0x00 }}};
+uint8_t testKeys[ROUNDS][4][4] = {{{ 0x2b, 0x28, 0xab, 0x09 },
+                                   { 0x7e, 0xae, 0xf7, 0xcf },
+                                   { 0x15, 0xd2, 0x15, 0x4f },
+                                   { 0x16, 0xa6, 0x88, 0x3c }},
+                                   {{ 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 }},
+                                   {{ 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 }},
+                                   {{ 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 }},
+                                   {{ 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 }},
+                                   {{ 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 }},
+                                   {{ 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 }},
+                                   {{ 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 }},
+                                   {{ 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 }},
+                                   {{ 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 },
+                                   { 0x00, 0x00, 0x00, 0x00 }}
+                                   };
+uint8_t rawData[4][4] =
+{{0x00, 0x44, 0x88, 0xcc},
+{0x11, 0x55, 0x99, 0xdd},
+{0x22, 0x66, 0xaa, 0xee},
+{0x33, 0x77, 0xbb, 0xff}};
+
+uint8_t testData[4][4] =
+{{0x04, 0xe0, 0x48, 0x28},
+{0x66, 0xcb, 0xf8, 0x06},
+{0x81, 0x19, 0xd3, 0x26},
+{0xe5, 0x9a, 0x7a, 0x4c}};
+
+shiftRows(rawData);
+initialize(keys,roundKeys);
+//printRoundKeyBlocks(keys, 0, ROUNDS - 1);
+//printRoundKeyBlocks(keys, 1, 1);
+addRoundKey(keys, rawData, 1);
+
 }
 
-static void initialize (keyStruct * keyStruct, uint8_t key[10][4][4]){
+static void initialize (keyStruct * keyStruct, uint8_t key[ROUNDS][4][4]){
 
   uint8_t rowConstant = 1;
   int i;
   int j;
   int k;
-  for(i=0; i<10; i++){
+  for(i=0; i<ROUNDS; i++){
     for(j=0;j<4;j++){
       for(k=0;k<4;k++){
         keyStruct->encryptKey[i][j][k] = keyStruct->decryptKey[i][j][k] = key [i][j][k];
@@ -78,7 +130,7 @@ static void initialize (keyStruct * keyStruct, uint8_t key[10][4][4]){
   }
   encryptionKeyExpansion(keyStruct, &rowConstant, 1);
 
-  for(i=2;i<10;i++){
+  for(i=2;i<ROUNDS;i++){
     rowConstant *= 2;
     encryptionKeyExpansion(keyStruct, &rowConstant, i);
   }
@@ -86,7 +138,7 @@ static void initialize (keyStruct * keyStruct, uint8_t key[10][4][4]){
 
 static void subBytes(uint8_t data[4][4]){
 
-int j,i;
+  int j,i;
 
   for(j=0;j<4;j++)
   {
@@ -134,36 +186,88 @@ static void shiftRows(uint8_t data[4][4]){
   data[3][3] = placeHolder[2];
 }
 
+static void addRoundKey (keyStruct * keys, uint8_t rawData[4][4], int round){
+  int i,j;
+
+  for(j=0;j<4;j++){
+    for(i=0;i<4;i++){
+      printf("XORing %02X and %02X\n", rawData[i][j], keys->encryptKey[round][i][j]);
+      rawData[i][j] ^= keys->encryptKey[round][i][j];
+      printf("Result is: %02X!\n", rawData[i][j]);
+    }
+  }
+}
+
 static void encryptionKeyExpansion (keyStruct * keys, uint8_t * rowConstant, int block){
 
   uint8_t i;
 
-  keys->encryptKey[block][0][0] = keys->encryptKey[block -1][1][0] ^ access_sbox(keys->encryptKey[block -1][3][3]) ^ (*rowConstant);
-  keys->encryptKey[block][0][1] = keys->encryptKey[block -1][1][1] ^ access_sbox(keys->encryptKey[block -1][3][0]);
-  keys->encryptKey[block][0][2] = keys->encryptKey[block -1][1][2] ^ access_sbox(keys->encryptKey[block -1][3][1]);
-  keys->encryptKey[block][0][3] = keys->encryptKey[block -1][1][3] ^ access_sbox(keys->encryptKey[block -1][3][2]);
+  //printRoundKeyBlocks(keys, 0, 0);
+
+  keys->encryptKey[block][0][0] = keys->encryptKey[block -1][1][3];
+  keys->encryptKey[block][1][0] = keys->encryptKey[block -1][2][3];
+  keys->encryptKey[block][2][0] = keys->encryptKey[block -1][3][3];
+  keys->encryptKey[block][3][0] = keys->encryptKey[block -1][0][3];
+
+  //printf("After Rotation\n" );
+  //printRoundKeyBlocks(keys, 1, 1);
+
+  keys->encryptKey[block][0][0] = access_sbox( keys->encryptKey[block][0][0]);
+  keys->encryptKey[block][1][0] = access_sbox( keys->encryptKey[block][1][0]);
+  keys->encryptKey[block][2][0] = access_sbox( keys->encryptKey[block][2][0]);
+  keys->encryptKey[block][3][0] = access_sbox( keys->encryptKey[block][3][0]);
+
+  //printf("After sbox\n" );
+  //printRoundKeyBlocks(keys, 1, 1);
+
+  keys->encryptKey[block][0][0] ^= (*rowConstant);
+
+  //printf("After rowConstant XOR\n" );
+  //printRoundKeyBlocks(keys, 1, 1);
+
+  keys->encryptKey[block][0][0] ^= keys->encryptKey[block - 1][0][0];
+  keys->encryptKey[block][1][0] ^= keys->encryptKey[block - 1][1][0];
+  keys->encryptKey[block][2][0] ^= keys->encryptKey[block - 1][2][0];
+  keys->encryptKey[block][3][0] ^= keys->encryptKey[block - 1][3][0];
+
+  //printf("After row 1 XOR\n" );
+  //printRoundKeyBlocks(keys, 1, 1);
+
 
   for (i=1;i<4;i++){
-    keys->encryptKey[block][i][0] = keys->encryptKey[block][i-1][0] ^ keys->encryptKey[block -1][i][0];
-    keys->encryptKey[block][i][1] = keys->encryptKey[block][i-1][1] ^ keys->encryptKey[block -1][i][1];
-    keys->encryptKey[block][i][2] = keys->encryptKey[block][i-1][2] ^ keys->encryptKey[block -1][i][2];
-    keys->encryptKey[block][i][3] = keys->encryptKey[block][i-1][3] ^ keys->encryptKey[block -1][i][3];
+    keys->encryptKey[block][0][i] = keys->encryptKey[block][0][i-1] ^ keys->encryptKey[block -1][0][i];
+    keys->encryptKey[block][1][i] = keys->encryptKey[block][1][i-1] ^ keys->encryptKey[block -1][1][i];
+    keys->encryptKey[block][2][i] = keys->encryptKey[block][2][i-1] ^ keys->encryptKey[block -1][2][i];
+    keys->encryptKey[block][3][i] = keys->encryptKey[block][3][i-1] ^ keys->encryptKey[block -1][3][i];
+  }
+
+  //printf("After block completed\n" );
+  //printRoundKeyBlocks(keys, 1, 1);
+}
+
+static void printRoundKeyBlocks (keyStruct * keys, int startBlock, int endBlock){
+  int i,j,k;
+  if((endBlock < ROUNDS) && (startBlock >= 0)){
+    for(i=startBlock;i<=endBlock;i++){
+      printDataBlock(keys->encryptKey[i]);
+      printf("\n");
+    }
+  }else{
+    printf("ERROR!\n" );
+    return;
   }
 }
 
-static void printRoundKey (keyStruct * keys){
-  int i,j,k;
+static void printDataBlock (uint8_t data[4][4]){
+  int i,j;
 
-  for(i=0;i<10;i++){
+  for(i=0;i<4;i++){
     for(j=0;j<4;j++){
-      for(k=0;k<4;k++){
-        if(k != 3){
-          printf("%02X, ", keys->encryptKey[i][j][k]);
-        }else{
-          printf("%02X ", keys->encryptKey[i][j][k]);
-        }
+      if(j != 3){
+        printf("%02X, ", data[i][j]);
+      }else{
+        printf("%02X ", data[i][j]);
       }
-      printf("\n");
     }
     printf("\n");
   }

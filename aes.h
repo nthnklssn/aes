@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#define ROUNDS 11
+
 typedef struct{
-  uint8_t key[10][4][4];
-  uint8_t encryptKey[10][4][4];
-  uint8_t decryptKey[10][4][4];
+  uint8_t key[ROUNDS][4][4];
+  uint8_t encryptKey[ROUNDS][4][4];
+  uint8_t decryptKey[ROUNDS][4][4];
 } keyStruct;
 
 const uint8_t sbox[256] = {
