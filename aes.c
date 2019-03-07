@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "aes.h"
 
+static void encrypt (uint8_t [4][4], keyStruct *);
+static void decrypt (uint8_t [4][4], keyStruct *);
 static void initialize (keyStruct * , uint8_t [ROUNDS][4][4]);
 static void encryptionKeyExpansion (keyStruct *, uint8_t, int);
 static void decryptionKeyExpansion (keyStruct *, uint8_t, int);
@@ -110,19 +112,51 @@ uint8_t testData[4][4] =
 {0x81, 0x19, 0xd3, 0x26},
 {0xe5, 0x9a, 0x7a, 0x4c}};
 
-shiftRows(rawData);
-initialize(keys,roundKeys);
+
+//shiftRows(rawData);
 //printRoundKeyBlocks(keys, 0, ROUNDS - 1);
 //printRoundKeyBlocks(keys, 1, 1);
+initialize(keys,roundKeys);
 printf("Original: \n");
 printDataBlock(rawData);
-addRoundKey(keys, rawData, 1);
+encrypt(rawData, keys);
 printf("Encrypted: \n");
 printDataBlock(rawData);
-inverseAddRoundKey(keys, rawData, 1);
-printf("Decrypted: \n");
-printDataBlock(rawData);
+//inverseAddRoundKey(keys, rawData, 1);
+//printf("Decrypted: \n");
+//printDataBlock(rawData);
 
+}
+
+static void encrypt(uint8_t dataBlock[4][4], keyStruct * keys){
+
+  int i;
+
+  addRoundKey(keys, dataBlock, 0);
+  for(i=1;i<ROUNDS;i++){
+    subBytes(dataBlock);
+    shiftRows(dataBlock);
+    if(i != (ROUNDS - 1)){
+    //mixColumns(dataBlock);
+    }
+    addRoundKey(keys, dataBlock, i);
+  }
+
+}
+
+static void decrypt(uint8_t dataBlock[4][4], keyStruct * keys){
+
+  int i;
+
+  for(i=(ROUNDS - 1);i>=0;i--){
+    inverseAddRoundKey(keys, dataBlock, i);
+    if(i != (ROUNDS - 1)){
+    //mixColumns(dataBlock);
+    }
+    shiftRows(dataBlock);
+    subBytes(dataBlock);
+  }
+  inverseAddRoundKey(keys, dataBlock, i);
 }
 
 static void initialize (keyStruct * keyStruct, uint8_t key[ROUNDS][4][4]){
@@ -132,22 +166,14 @@ static void initialize (keyStruct * keyStruct, uint8_t key[ROUNDS][4][4]){
   for(i=0;i<ROUNDS;i++){
     if(i == 0){
       roundConstants[i] = 1;
-      printf("%d : %02X\n",i,roundConstants[i]);
     }else if((i > 0) && (roundConstants[i - 1] < 0x50)){
       roundConstants[i] = roundConstants[i - 1] * 2;
-      printf("%d : %02X\n",i,roundConstants[i]);
     }else if((i > 0) && (roundConstants[i - 1] >= 0x50)){
       roundConstants[i] = (2 * roundConstants[i - 1]);// ^ 0x11;
       roundConstants[i] ^= 0x1b;
-      printf("%d : %02X\n",i,roundConstants[i]);
     }
   }
-  printf("running\n");
 
-  for(i=0;i<ROUNDS;i++){
-    printf("%02X", roundConstants[i] );
-  }
-  printf("\n");
 
   for(i=0; i<ROUNDS; i++){
     for(j=0;j<4;j++){
@@ -173,9 +199,9 @@ static void subBytes(uint8_t data[4][4]){
     for(i=0;i<4;i++)
     {
 
-      printf("%02X\n", data[i][j]);
+      //printf("%02X\n", data[i][j]);
       data[i][j] = sbox[data[i][j]];
-      printf("%02X\n", data[i][j]);
+      //printf("%02X\n", data[i][j]);
     }
   }
 }
