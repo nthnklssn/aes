@@ -51,9 +51,9 @@ int main()
   encrypt(rawData, keys);
   printf("Encrypted: \n");
   printDataBlock(rawData);
-  //inverseAddRoundKey(keys, rawData, 1);
-  //printf("Decrypted: \n");
-  //printDataBlock(rawData);
+  inverseAddRoundKey(keys, rawData, 1);
+  printf("Decrypted: \n");
+  printDataBlock(rawData);
 
 }
 
