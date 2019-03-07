@@ -3,13 +3,16 @@
 #include "aes.h"
 
 static void initialize (keyStruct * , uint8_t [ROUNDS][4][4]);
-static void encryptionKeyExpansion (keyStruct *, uint8_t *, int);
-static void decryptionKeyExpansion (keyStruct *, uint8_t *, int);
+static void encryptionKeyExpansion (keyStruct *, uint8_t, int);
+static void decryptionKeyExpansion (keyStruct *, uint8_t, int);
 static void printDataBlock (uint8_t [4][4]);
 static void printRoundKeyBlocks (keyStruct *, int, int);
 static void addRoundKey (keyStruct *, uint8_t [4][4], int round);
+static void inverseAddRoundKey (keyStruct *, uint8_t [4][4], int round);
 static void subBytes(uint8_t [4][4]);
 static void shiftRows(uint8_t [4][4]);
+
+static uint8_t roundConstants[ROUNDS];
 
 int main()
 {
@@ -111,17 +114,41 @@ shiftRows(rawData);
 initialize(keys,roundKeys);
 //printRoundKeyBlocks(keys, 0, ROUNDS - 1);
 //printRoundKeyBlocks(keys, 1, 1);
+printf("Original: \n");
+printDataBlock(rawData);
 addRoundKey(keys, rawData, 1);
+printf("Encrypted: \n");
+printDataBlock(rawData);
+inverseAddRoundKey(keys, rawData, 1);
+printf("Decrypted: \n");
+printDataBlock(rawData);
 
 }
 
 static void initialize (keyStruct * keyStruct, uint8_t key[ROUNDS][4][4]){
 
-  rowConstants[0] = 1;
+  //rowConstants[0] = 1;
   int i,j,k;
   for(i=0;i<ROUNDS;i++){
-
+    if(i == 0){
+      roundConstants[i] = 1;
+      printf("%d : %02X\n",i,roundConstants[i]);
+    }else if((i > 0) && (roundConstants[i - 1] < 0x50)){
+      roundConstants[i] = roundConstants[i - 1] * 2;
+      printf("%d : %02X\n",i,roundConstants[i]);
+    }else if((i > 0) && (roundConstants[i - 1] >= 0x50)){
+      roundConstants[i] = (2 * roundConstants[i - 1]);// ^ 0x11;
+      roundConstants[i] ^= 0x1b;
+      printf("%d : %02X\n",i,roundConstants[i]);
+    }
   }
+  printf("running\n");
+
+  for(i=0;i<ROUNDS;i++){
+    printf("%02X", roundConstants[i] );
+  }
+  printf("\n");
+
   for(i=0; i<ROUNDS; i++){
     for(j=0;j<4;j++){
       for(k=0;k<4;k++){
@@ -129,11 +156,11 @@ static void initialize (keyStruct * keyStruct, uint8_t key[ROUNDS][4][4]){
       }
     }
   }
-  encryptionKeyExpansion(keyStruct, rowConstants[0], 1);
+  //encryptionKeyExpansion(keyStruct, roundConstants[0], 1);
 
-  for(i=2;i<ROUNDS;i++){
-    rowConstant *= 2;
-    encryptionKeyExpansion(keyStruct, rowConstants[i - 1], i);
+  for(i=1;i<ROUNDS;i++){
+    //roundConstants *= 2;
+    encryptionKeyExpansion(keyStruct, roundConstants[i - 1], i);
   }
 }
 
@@ -192,14 +219,27 @@ static void addRoundKey (keyStruct * keys, uint8_t rawData[4][4], int round){
 
   for(j=0;j<4;j++){
     for(i=0;i<4;i++){
-      printf("XORing %02X and %02X\n", rawData[i][j], keys->encryptKey[round][i][j]);
+      //printf("XORing %02X and %02X\n", rawData[i][j], keys->encryptKey[round][i][j]);
       rawData[i][j] ^= keys->encryptKey[round][i][j];
-      printf("Result is: %02X!\n", rawData[i][j]);
+      //printf("Result is: %02X!\n", rawData[i][j]);
     }
   }
 }
 
-static void encryptionKeyExpansion (keyStruct * keys, uint8_t * rowConstant, int block){
+
+static void inverseAddRoundKey (keyStruct * keys, uint8_t rawData[4][4], int round){
+  int i,j;
+
+  for(j=0;j<4;j++){
+    for(i=0;i<4;i++){
+      //printf("XORing %02X and %02X\n", rawData[i][j], keys->encryptKey[round][i][j]);
+      rawData[i][j] ^= keys->encryptKey[round][i][j];
+      //printf("Result is: %02X!\n", rawData[i][j]);
+    }
+  }
+}
+
+static void encryptionKeyExpansion (keyStruct * keys, uint8_t rowConstant, int block){
 
   uint8_t i;
 
@@ -221,7 +261,7 @@ static void encryptionKeyExpansion (keyStruct * keys, uint8_t * rowConstant, int
   //printf("After sbox\n" );
   //printRoundKeyBlocks(keys, 1, 1);
 
-  keys->encryptKey[block][0][0] ^= (*rowConstant);
+  keys->encryptKey[block][0][0] ^= (rowConstant);
 
   //printf("After rowConstant XOR\n" );
   //printRoundKeyBlocks(keys, 1, 1);
