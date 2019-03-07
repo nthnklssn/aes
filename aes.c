@@ -80,10 +80,10 @@ static void decrypt(uint8_t dataBlock[4][4], keyStruct * keys){
   for(i=(ROUNDS - 1);i>=0;i--){
     inverseAddRoundKey(keys, dataBlock, i);
     if(i != (ROUNDS - 1)){
-      //mixColumns(dataBlock);
+      //mixColumns(dataBlock); -- NEED INVERSE VERSION
     }
-    shiftRows(dataBlock);
-    subBytes(dataBlock);
+    //shiftRows(dataBlock); -- NEED INVERSE VERSION
+    //subBytes(dataBlock); -- NEED INVERSE VERSION
   }
   inverseAddRoundKey(keys, dataBlock, i);
 }
