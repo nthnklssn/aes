@@ -12,7 +12,11 @@ static void printRoundKeyBlocks (keyStruct *, int, int);
 static void addRoundKey (keyStruct *, uint8_t [4][4], int round);
 static void inverseAddRoundKey (keyStruct *, uint8_t [4][4], int round);
 static void subBytes(uint8_t [4][4]);
+static void subBytesInv(uint8_t data[4][4]);
 static void shiftRows(uint8_t [4][4]);
+static void shiftRowsInv(uint8_t data[4][4]);
+static void mixColumns(uint8_t data[4][4]);
+static void mixColumnsInv(uint8_t data[4][4]);
 
 static uint8_t roundConstants[ROUNDS];
 
@@ -28,24 +32,29 @@ int main()
   { 0x08, 0x09, 0x0a, 0x0b },
   { 0x0c, 0x0d, 0x0e, 0x0f }}};
   uint8_t testKeys[ROUNDS][4][4] =
-  {{{ 0x2b, 0x28, 0xab, 0x09 },
-  { 0x7e, 0xae, 0xf7, 0xcf },
-  { 0x15, 0xd2, 0x15, 0x4f },
-  { 0x16, 0xa6, 0x88, 0x3c }}};
-  uint8_t rawData[4][4] =
-  {{0x00, 0x44, 0x88, 0xcc},
-  {0x11, 0x55, 0x99, 0xdd},
-  {0x22, 0x66, 0xaa, 0xee},
-  {0x33, 0x77, 0xbb, 0xff}};
+  {{{ 0x00, 0x00, 0x00, 0x00 },
+  { 0x00, 0x00, 0x00, 0x00 },
+  { 0x00, 0x00, 0x00, 0x00 },
+  { 0x00, 0x00, 0x00, 0x00 }}};
+  //uint8_t rawData[4][4] =
+  //{{0x00, 0x44, 0x88, 0xcc},
+  //{0x11, 0x55, 0x99, 0xdd},
+  //{0x22, 0x66, 0xaa, 0xee},
+  //{0x33, 0x77, 0xbb, 0xff}};
 
   uint8_t testData[4][4] =
   {{0x04, 0xe0, 0x48, 0x28},
   {0x66, 0xcb, 0xf8, 0x06},
   {0x81, 0x19, 0xd3, 0x26},
   {0xe5, 0x9a, 0x7a, 0x4c}};
+  uint8_t rawData[4][4] =
+  {{0xf3, 0x3c, 0xcd, 0x08},
+  {0x44, 0xc6, 0x5d, 0xf2},
+  {0x81, 0x27, 0xc3, 0x73},
+  {0xec, 0xba, 0xfb, 0xe6}};
 
 
-  initialize(keys,roundKeys);
+  initialize(keys,testKeys);
   printf("Original: \n");
   printDataBlock(rawData);
   encrypt(rawData, keys);
@@ -66,7 +75,7 @@ static void encrypt(uint8_t dataBlock[4][4], keyStruct * keys){
     subBytes(dataBlock);
     shiftRows(dataBlock);
     if(i != (ROUNDS - 1)){
-      //mixColumns(dataBlock);
+      mixColumns(dataBlock);
     }
     addRoundKey(keys, dataBlock, i);
   }
@@ -80,10 +89,10 @@ static void decrypt(uint8_t dataBlock[4][4], keyStruct * keys){
   for(i=(ROUNDS - 1);i>=0;i--){
     inverseAddRoundKey(keys, dataBlock, i);
     if(i != (ROUNDS - 1)){
-      //mixColumns(dataBlock); -- NEED INVERSE VERSION
+      mixColumnsInv(dataBlock);
     }
-    //shiftRows(dataBlock); -- NEED INVERSE VERSION
-    //subBytes(dataBlock); -- NEED INVERSE VERSION
+    shiftRowsInv(dataBlock);
+    subBytesInv(dataBlock);
   }
   inverseAddRoundKey(keys, dataBlock, i);
 }
@@ -125,10 +134,20 @@ static void subBytes(uint8_t data[4][4]){
   {
     for(i=0;i<4;i++)
     {
-
-      //printf("%02X\n", data[i][j]);
       data[i][j] = sbox[data[i][j]];
-      //printf("%02X\n", data[i][j]);
+    }
+  }
+}
+
+static void subBytesInv(uint8_t data[4][4]){
+
+  int j,i;
+
+  for(j=0;j<4;j++)
+  {
+    for(i=0;i<4;i++)
+    {
+      data[i][j] = sboxInv[data[i][j]];
     }
   }
 }
@@ -167,6 +186,40 @@ static void shiftRows(uint8_t data[4][4]){
   data[3][3] = placeHolder[2];
 }
 
+static void shiftRowsInv(uint8_t data[4][4]){
+  uint8_t placeHolder[4];
+  //Second row
+  placeHolder[0] = data[1][0];
+  placeHolder[1] = data[1][1];
+  placeHolder[2] = data[1][2];
+  placeHolder[3] = data[1][3];
+  data[1][0] = placeHolder[3];
+  data[1][1] = placeHolder[0];
+  data[1][2] = placeHolder[1];
+  data[1][3] = placeHolder[2];
+
+  //third row
+
+  placeHolder[0] = data[2][0];
+  placeHolder[1] = data[2][1];
+  placeHolder[2] = data[2][2];
+  placeHolder[3] = data[2][3];
+  data[2][0] = placeHolder[2];
+  data[2][1] = placeHolder[3];
+  data[2][2] = placeHolder[0];
+  data[2][3] = placeHolder[1];
+
+  // fourth row
+  placeHolder[0] = data[3][0];
+  placeHolder[1] = data[3][1];
+  placeHolder[2] = data[3][2];
+  placeHolder[3] = data[3][3];
+  data[3][0] = placeHolder[1];
+  data[3][1] = placeHolder[2];
+  data[3][2] = placeHolder[3];
+  data[3][3] = placeHolder[0];
+}
+
 static void mixColumns(uint8_t data[4][4])
 {
   for(int i=0;i<4;i++)
@@ -179,6 +232,22 @@ static void mixColumns(uint8_t data[4][4])
     data[1][i] = b0 ^ mul2[b1] ^ mul3[b2] ^ b3;
     data[2][i] = b0 ^ b1 ^ mul2[b2] ^ mul3[b3];
     data[3][i] = mul3[b0] ^ b1 ^ b2 ^ mul2[b3];
+  }
+}
+
+static void mixColumnsInv(uint8_t data[4][4])
+{
+  for(int i=0;i<4;i++)
+  {
+    uint8_t b0 = data[0][i];
+    uint8_t b1 = data[1][i];
+    uint8_t b2 = data[2][i];
+    uint8_t b3 = data[3][i];
+
+    data[0][i] = mul14[b0] ^ mul11[b1] ^ mul13[b2] ^ mul9[b3];
+    data[1][i] = mul9[b0] ^ mul14[b1] ^ mul11[b2] ^ mul13[b3];
+    data[2][i] = mul13[b0] ^ mul9[b1] ^ mul14[b2] ^ mul11[b3];
+    data[3][i] = mul11[b0] ^ mul13[b1] ^ mul9[b2] ^ mul14[b3];
   }
 }
 static void addRoundKey (keyStruct * keys, uint8_t rawData[4][4], int round){
