@@ -270,7 +270,7 @@ endmodule
 // mix columns Code
 module mixColumns(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16);
   input[7:0] input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16;
-  output[7:0] output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16;
+  output reg [7:0] output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16;
 
   always @(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16) begin
     output1 = (input1 *2) ^ (input2 * 3) ^ input3 ^ input4;
@@ -295,7 +295,7 @@ endmodule
 // inverted mix columns Code
 module invMixColumns(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16);
   input[7:0] input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16;
-  output[7:0] output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16;
+  output reg [7:0] output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16;
 
   always @(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16) begin
     output1 = (input1 * 14) ^ (input2 * 11) ^ (input3 * 13) ^ (input4 * 9);
@@ -314,5 +314,28 @@ module invMixColumns(input1, input2, input3, input4, input5, input6, input7, inp
     output14 = (input13 * 9) ^ (input14 * 14) ^ (input15 * 11) ^ (input16 * 13);
     output15 = (input13 * 13) ^ (input14 * 9) ^ (input15 * 14) ^ (input16 * 11);
     output16 = (input13 * 11) ^ (input14 * 13) ^ (input15 * 9) ^ (input16 * 14);
+  end
+endmodule
+
+// calculate roundConstant Code
+module roundConstant (round, previousRoundConstant, newRoundConstant);
+  input [3:0] round, previousRoundConstant;
+  output reg [3:0] newRoundConstant;
+
+  always @(round, previousRoundConstant, newRoundConstant) begin
+    if (round == 0)
+      newRoundConstant = 1;
+    else
+      begin
+        if (round > 0) && (previousRoundConstant < 8'h50)
+          newRoundConstant = previousRoundConstant * 2;
+        else
+          begin
+            if (round > 0) && (previousRoundConstant >= 8'h50)
+              newRoundConstant = (previousRoundConstant * 2) ^ 8'h1B;
+            else
+              newRoundConstant = 0;
+          end
+      end
   end
 endmodule
