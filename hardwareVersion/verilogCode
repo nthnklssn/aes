@@ -266,3 +266,28 @@ module Sbox(input, output);
   end
 
 endmodule
+
+// mix columns Code
+modue mixColumns(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16);
+  input[7:0] input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16;
+  output[7:0] output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16;
+
+  always @(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16) begin
+    output1 = (input1 *2) ^ (input2 * 3) ^ input3 ^ input4
+    output2 = input1 ^ (input2 * 2) ^ (input3 * 3) ^ input4
+    output3 = input1 ^ input2 ^ (input3 * 2) ^ (input4 *3)
+    output4 = (input1 * 3) ^ input2 ^ input3 ^ (input4 * 2)
+    output5 = (input5 *2) ^ (input6 * 3) ^ input7 ^ input8
+    output6 = input5 ^ (input6 * 2) ^ (input7 * 3) ^ input8
+    output7 = input5 ^ input6 ^ (input7 * 2) ^ (input8 *3)
+    output8 = (input5 * 3) ^ input6 ^ input7 ^ (input8 * 2)
+    output9 = (input9 *2) ^ (input10 * 3) ^ input11 ^ input12
+    output10 = input9 ^ (input10 * 2) ^ (input11 * 3) ^ input12
+    output11 = input9 ^ input10 ^ (input11 * 2) ^ (input12 *3)
+    output12 = (input9 * 3) ^ input10 ^ input11 ^ (input12 * 2)
+    output13 = (input13 *2) ^ (input14 * 3) ^ input15 ^ input16
+    output14 = input13 ^ (input14 * 2) ^ (input15 * 3) ^ input16
+    output15 = input13 ^ input14 ^ (input15 * 2) ^ (input16 *3)
+    output16 = (input13 * 3) ^ input14 ^ input15 ^ (input16 * 2)
+  end
+endmodule
