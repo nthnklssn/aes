@@ -268,26 +268,51 @@ module Sbox(input, output);
 endmodule
 
 // mix columns Code
-modue mixColumns(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16);
+module mixColumns(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16);
   input[7:0] input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16;
   output[7:0] output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16;
 
   always @(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16) begin
-    output1 = (input1 *2) ^ (input2 * 3) ^ input3 ^ input4
-    output2 = input1 ^ (input2 * 2) ^ (input3 * 3) ^ input4
-    output3 = input1 ^ input2 ^ (input3 * 2) ^ (input4 *3)
-    output4 = (input1 * 3) ^ input2 ^ input3 ^ (input4 * 2)
-    output5 = (input5 *2) ^ (input6 * 3) ^ input7 ^ input8
-    output6 = input5 ^ (input6 * 2) ^ (input7 * 3) ^ input8
-    output7 = input5 ^ input6 ^ (input7 * 2) ^ (input8 *3)
-    output8 = (input5 * 3) ^ input6 ^ input7 ^ (input8 * 2)
-    output9 = (input9 *2) ^ (input10 * 3) ^ input11 ^ input12
-    output10 = input9 ^ (input10 * 2) ^ (input11 * 3) ^ input12
-    output11 = input9 ^ input10 ^ (input11 * 2) ^ (input12 *3)
-    output12 = (input9 * 3) ^ input10 ^ input11 ^ (input12 * 2)
-    output13 = (input13 *2) ^ (input14 * 3) ^ input15 ^ input16
-    output14 = input13 ^ (input14 * 2) ^ (input15 * 3) ^ input16
-    output15 = input13 ^ input14 ^ (input15 * 2) ^ (input16 *3)
-    output16 = (input13 * 3) ^ input14 ^ input15 ^ (input16 * 2)
+    output1 = (input1 *2) ^ (input2 * 3) ^ input3 ^ input4;
+    output2 = input1 ^ (input2 * 2) ^ (input3 * 3) ^ input4;
+    output3 = input1 ^ input2 ^ (input3 * 2) ^ (input4 *3);
+    output4 = (input1 * 3) ^ input2 ^ input3 ^ (input4 * 2);
+    output5 = (input5 *2) ^ (input6 * 3) ^ input7 ^ input8;
+    output6 = input5 ^ (input6 * 2) ^ (input7 * 3) ^ input8;
+    output7 = input5 ^ input6 ^ (input7 * 2) ^ (input8 *3);
+    output8 = (input5 * 3) ^ input6 ^ input7 ^ (input8 * 2);
+    output9 = (input9 *2) ^ (input10 * 3) ^ input11 ^ input12;
+    output10 = input9 ^ (input10 * 2) ^ (input11 * 3) ^ input12;
+    output11 = input9 ^ input10 ^ (input11 * 2) ^ (input12 *3);
+    output12 = (input9 * 3) ^ input10 ^ input11 ^ (input12 * 2);
+    output13 = (input13 *2) ^ (input14 * 3) ^ input15 ^ input16;
+    output14 = input13 ^ (input14 * 2) ^ (input15 * 3) ^ input16;
+    output15 = input13 ^ input14 ^ (input15 * 2) ^ (input16 *3);
+    output16 = (input13 * 3) ^ input14 ^ input15 ^ (input16 * 2);
+  end
+endmodule
+
+// inverted mix columns Code
+module invMixColumns(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16);
+  input[7:0] input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16;
+  output[7:0] output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16;
+
+  always @(input1, input2, input3, input4, input5, input6, input7, input8,input9, input10, input11, input12, input13, input14, input15, input16, output1, output2, output3, output4, output5, output6, output7, output8,output9, output10, output11, output12, output13, output14, output15, output16) begin
+    output1 = (input1 * 14) ^ (input2 * 11) ^ (input3 * 13) ^ (input4 * 9);
+    output2 = (input1 * 9) ^ (input2 * 14) ^ (input3 * 11) ^ (input4 * 13);
+    output3 = (input1 * 13) ^ (input2 * 9) ^ (input3 * 14) ^ (input4 * 11);
+    output4 = (input1 * 11) ^ (input2 * 13) ^ (input3 * 9) ^ (input4 * 14);
+    output5 = (input5 * 14) ^ (input6 * 11) ^ (input7 * 13) ^ (input8 * 9);
+    output6 = (input5 * 9) ^ (input6 * 14) ^ (input7 * 11) ^ (input8 * 13);
+    output7 = (input5 * 13) ^ (input6 * 9) ^ (input7 * 14) ^ (input8 * 11);
+    output8 = (input5 * 11) ^ (input6 * 13) ^ (input7 * 9) ^ (input8 * 14);
+    output9 = (input9 * 14) ^ (input10 * 11) ^ (input11 * 13) ^ (input12 * 9);
+    output10 = (input9 * 9) ^ (input10 * 14) ^ (input11 * 11) ^ (input12 * 13);
+    output11 = (input9 * 13) ^ (input10 * 9) ^ (input11 * 14) ^ (input12 * 11);
+    output12 = (input9 * 11) ^ (input10 * 13) ^ (input11 * 9) ^ (input12 * 14);
+    output13 = (input13 * 14) ^ (input14 * 11) ^ (input15 * 13) ^ (input16 * 9);
+    output14 = (input13 * 9) ^ (input14 * 14) ^ (input15 * 11) ^ (input16 * 13);
+    output15 = (input13 * 13) ^ (input14 * 9) ^ (input15 * 14) ^ (input16 * 11);
+    output16 = (input13 * 11) ^ (input14 * 13) ^ (input15 * 9) ^ (input16 * 14);
   end
 endmodule
